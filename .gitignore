@@ -2,3 +2,5 @@
 /.envrc
 /.direnv
 *.swp
+*.swo
+/test_files

@@ -1,5 +1,6 @@
 use crate::circ::sequence::Gate::*;
 
+#[derive(Debug, Clone)]
 pub struct Circuit {
     q_lines: usize,
     c_lines: usize,
@@ -25,7 +26,10 @@ impl Circuit {
             H { l } => self.h(l),
             X { l } => self.x(l),
             Y { l } => self.y(l),
-            Z { l } => self.z(l)
+            Z { l } => self.z(l),
+            SX { l } => self.sx(l),
+            CX { l, c } => self.cx(l, c),
+            CCX { l, c0, c1 } => self.ccx(l, c0, c1)
         }
     }
 
@@ -60,6 +64,24 @@ impl Circuit {
         if self.q_lines <= l { self.q_lines = l + 1; }
         self.gates.push(Z { l })
     }
+
+    pub fn sx(&mut self, l: usize) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(SX { l })
+    }
+
+    pub fn cx(&mut self, l: usize, c: usize) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        if self.q_lines <= c { self.q_lines = c + 1; }
+        self.gates.push(CX { l, c })
+    }
+
+    pub fn ccx(&mut self, l: usize, c0: usize, c1: usize) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        if self.q_lines <= c0 { self.q_lines = c0 + 1; }
+        if self.q_lines <= c1 { self.q_lines = c1 + 1; }
+        self.gates.push(CCX { l, c0, c1 })
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq)]
@@ -68,7 +90,10 @@ pub enum Gate {
     H { l: usize },
     X { l: usize },
     Y { l: usize },
-    Z { l: usize }
+    Z { l: usize },
+    SX { l: usize },
+    CX { l: usize, c: usize },
+    CCX { l: usize, c0: usize, c1: usize }
 }
 
 impl PartialEq for Gate {
@@ -79,6 +104,9 @@ impl PartialEq for Gate {
             (X { .. }, X { .. }) => true,
             (Y { .. }, Y { .. }) => true,
             (Z { .. }, Z { .. }) => true,
+            (SX { .. }, SX { .. }) => true,
+            (CX { .. }, CX { .. }) => true,
+            (CCX { .. }, CCX { .. }) => true,
             _ => false
         }
     }
@@ -98,12 +126,13 @@ mod tests {
         circ.push(Gate::H { l: 2 });
         assert_eq!(circ.lines(), (3, 0));
 
+        circ.measure(0, 0);
+        assert_eq!(circ.lines(), (3, 1));
+
         circ.x(0);
         circ.y(1);
         circ.z(2);
-        assert_eq!(circ.lines(), (3, 0));
-
-        circ.measure(0, 0);
-        assert_eq!(circ.lines(), (3, 1));
+        circ.cx(0, 3);
+        assert_eq!(circ.lines(), (4, 1));
     }
 }
