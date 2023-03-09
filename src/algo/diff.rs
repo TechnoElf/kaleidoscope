@@ -17,6 +17,7 @@ pub struct EditGraph<T> {
 }
 
 impl<T> EditGraph<T> {
+    // TODO: use borrowed Vecs
     pub fn new(a: Vec<T>, b: Vec<T>) -> Self {
         Self {
             a,
@@ -126,7 +127,7 @@ impl<T> EditGraph<T>
 
 #[cfg(test)]
 mod tests {
-    use crate::algo::diff::*;
+    use super::*;
 
     #[test]
     fn short_text_diff() {

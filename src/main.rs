@@ -1,6 +1,6 @@
 mod algo;
+mod circ;
 mod format;
-mod circuit;
 
 fn main() {
     println!("Hello, world!");
