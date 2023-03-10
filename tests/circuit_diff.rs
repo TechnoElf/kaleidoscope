@@ -255,7 +255,5 @@ fn openqasm_circuit_diff() {
     let b = openqasm::parse(SRCB.to_string());
 
     let edit_graph = EditGraph::new(a.gates().clone(), b.gates().clone());
-    let edit_script = edit_graph.edit_script();
-
-    panic!("{:?}", edit_script);
+    let _edit_script = edit_graph.edit_script();
 }

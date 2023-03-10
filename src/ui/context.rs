@@ -1,7 +1,4 @@
 use std::time::Instant;
-use std::collections::HashMap;
-use std::borrow::Cow;
-use std::rc::Rc;
 
 use glium::{Display, Surface};
 use glium::glutin::ContextBuilder;
@@ -9,13 +6,11 @@ use glium::glutin::event_loop::{EventLoop, ControlFlow};
 use glium::glutin::window::WindowBuilder;
 use glium::glutin::dpi::LogicalSize;
 use glium::glutin::event::{Event, WindowEvent};
-use glium::uniforms::{SamplerBehavior, MagnifySamplerFilter};
-use glium::backend::Facade;
 
 use imgui::*;
 
 use imgui_winit_support::{WinitPlatform, HiDpiMode};
-use imgui_glium_renderer::{Renderer, Texture};
+use imgui_glium_renderer::Renderer;
 
 pub struct UiContext<F: FnMut(&Ui, &mut T) + 'static, T: 'static> {
     event_loop: EventLoop<()>,

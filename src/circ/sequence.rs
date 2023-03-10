@@ -7,6 +7,7 @@ pub struct Circuit {
     gates: Vec<Gate>
 }
 
+#[allow(dead_code)]
 impl Circuit {
     pub fn new() -> Self {
         Self {
@@ -38,6 +39,7 @@ impl Circuit {
     }
 }
 
+#[allow(dead_code)]
 impl Circuit {
     pub fn measure(&mut self, ql: usize, cl: usize) {
         if self.q_lines <= ql { self.q_lines = ql + 1; }

@@ -75,7 +75,6 @@ fn tokenise_statement(s: String) -> Vec<String> {
         if c == ';' {
             if !cur.is_empty() {
                 tokens.push(cur);
-                cur = String::new();
             }
             break;
         }
@@ -161,6 +160,8 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                 match id.as_str() {
                     "h" => { circ.h(symbol_table[&args[0].0].line_offset + args[0].1); },
                     "x" => { circ.x(symbol_table[&args[0].0].line_offset + args[0].1); },
+                    "y" => { circ.y(symbol_table[&args[0].0].line_offset + args[0].1); },
+                    "z" => { circ.z(symbol_table[&args[0].0].line_offset + args[0].1); },
                     "cp" => (),
                     "cx" => {
                         circ.cx(
