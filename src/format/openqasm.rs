@@ -296,6 +296,6 @@ mod tests {
 
     #[test]
     fn parse_source() {
-        let circ = parse(SRC0.to_string());
+        let _circ = parse(SRC0.to_string());
     }
 }
