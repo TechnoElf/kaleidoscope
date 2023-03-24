@@ -101,14 +101,14 @@ pub enum Gate {
 impl PartialEq for Gate {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Measure { .. }, Measure { .. }) => true,
-            (H { .. }, H { .. }) => true,
-            (X { .. }, X { .. }) => true,
-            (Y { .. }, Y { .. }) => true,
-            (Z { .. }, Z { .. }) => true,
-            (SX { .. }, SX { .. }) => true,
-            (CX { .. }, CX { .. }) => true,
-            (CCX { .. }, CCX { .. }) => true,
+            (Measure { ql: qla, cl: cla }, Measure { ql: qlb, cl: clb }) => qla == qlb && cla == clb,
+            (H { l: la }, H { l: lb }) => la == lb,
+            (X { l: la }, X { l: lb }) => la == lb,
+            (Y { l: la }, Y { l: lb }) => la == lb,
+            (Z { l: la }, Z { l: lb }) => la == lb,
+            (SX { l: la }, SX { l: lb }) => la == lb,
+            (CX { l: la, c: ca }, CX { l: lb, c: cb }) => la == lb && ca == cb,
+            (CCX { l: la, c0: c0a, c1: c1a }, CCX { l: lb, c0: c0b, c1: c1b }) => la == lb && c0a == c0b && c1a == c1b,
             _ => false
         }
     }
