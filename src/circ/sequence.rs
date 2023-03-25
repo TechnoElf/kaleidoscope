@@ -29,7 +29,12 @@ impl Circuit {
             Y { l } => self.y(l),
             Z { l } => self.z(l),
             SX { l } => self.sx(l),
+            RX { l, theta } => self.rx(l, &theta),
+            RY { l, theta } => self.ry(l, &theta),
+            RZ { l, theta } => self.rz(l, &theta),
+            U2 { l, phi, lambda } => self.u2(l, &phi, &lambda),
             CX { l, c } => self.cx(l, c),
+            CP { l, c, theta } => self.cp(l, c, &theta),
             CCX { l, c0, c1 } => self.ccx(l, c0, c1)
         }
     }
@@ -72,10 +77,36 @@ impl Circuit {
         self.gates.push(SX { l })
     }
 
+    pub fn rx(&mut self, l: usize, theta: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(RX { l, theta: theta.to_string() })
+    }
+
+    pub fn ry(&mut self, l: usize, theta: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(RY { l, theta: theta.to_string() })
+    }
+
+    pub fn rz(&mut self, l: usize, theta: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(RZ { l, theta: theta.to_string() })
+    }
+
+    pub fn u2(&mut self, l: usize, phi: &str, lambda: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(U2 { l, phi: phi.to_string(), lambda: lambda.to_string() })
+    }
+
     pub fn cx(&mut self, l: usize, c: usize) {
         if self.q_lines <= l { self.q_lines = l + 1; }
         if self.q_lines <= c { self.q_lines = c + 1; }
         self.gates.push(CX { l, c })
+    }
+
+    pub fn cp(&mut self, l: usize, c: usize, theta: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        if self.q_lines <= c { self.q_lines = c + 1; }
+        self.gates.push(CP { l, c, theta: theta.to_string() })
     }
 
     pub fn ccx(&mut self, l: usize, c0: usize, c1: usize) {
@@ -86,16 +117,21 @@ impl Circuit {
     }
 }
 
-#[derive(Debug, Clone, Copy, Eq)]
+#[derive(Debug, Clone, Eq)]
 pub enum Gate {
     Measure { ql: usize, cl: usize },
-    H { l: usize },
-    X { l: usize },
-    Y { l: usize },
-    Z { l: usize },
-    SX { l: usize },
-    CX { l: usize, c: usize },
-    CCX { l: usize, c0: usize, c1: usize }
+    H { l: usize }, // Hadamard
+    X { l: usize }, // X
+    Y { l: usize }, // Y
+    Z { l: usize }, // Z
+    SX { l: usize }, // Square root of x
+    RX { l: usize, theta: String }, // Rotate x
+    RY { l: usize, theta: String }, // Rotate y
+    RZ { l: usize, theta: String }, // Rotate z
+    U2 { l: usize, phi: String, lambda: String }, // Rotate y and z
+    CX { l: usize, c: usize }, // Controlled x
+    CP { l: usize, c: usize, theta: String }, // Controlled phase
+    CCX { l: usize, c0: usize, c1: usize } // Toffoli
 }
 
 impl PartialEq for Gate {
@@ -107,7 +143,12 @@ impl PartialEq for Gate {
             (Y { l: la }, Y { l: lb }) => la == lb,
             (Z { l: la }, Z { l: lb }) => la == lb,
             (SX { l: la }, SX { l: lb }) => la == lb,
+            (RX { l: la, theta: theta_a }, RX { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
+            (RY { l: la, theta: theta_a }, RY { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
+            (RZ { l: la, theta: theta_a }, RZ { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
+            (U2 { l: la, phi: phi_a, lambda: lambda_a }, U2 { l: lb, phi: phi_b, lambda: lambda_b }) => la == lb && phi_a == phi_b && lambda_a == lambda_b,
             (CX { l: la, c: ca }, CX { l: lb, c: cb }) => la == lb && ca == cb,
+            (CP { l: la, c: ca, theta: theta_a }, CP { l: lb, c: cb, theta: theta_b }) => la == lb && ca == cb && theta_a == theta_b,
             (CCX { l: la, c0: c0a, c1: c1a }, CCX { l: lb, c0: c0b, c1: c1b }) => la == lb && c0a == c0b && c1a == c1b,
             _ => false
         }

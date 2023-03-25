@@ -94,7 +94,7 @@ enum Instruction {
     QRegDef { id: String, size: usize },
     CRegDef { id: String, size: usize },
     Measure { idq: String, iq: usize, idc: String, ic: usize },
-    QOp { id: String, args: Vec<(String, usize)> },
+    QOp { id: String, args: Vec<(String, usize)>, params: Vec<String> },
 }
 
 // TODO: syntax checks
@@ -112,11 +112,24 @@ fn analyse_syntax(tokens: Vec<Vec<String>>) -> Vec<Instruction> {
             _ => {
                 let instr = s.remove(0);
 
+                let mut params = Vec::new();
                 if s[0] == "(" {
-                    while s[0] != ")" {
-                        s.remove(0);
-                    }
                     let _ = s.remove(0);
+
+                    let mut depth = 1;
+                    let mut param = String::new();
+                    while depth >= 1 {
+                        match s.remove(0).as_str() {
+                            "(" => depth += 1,
+                            ")" => depth -= 1,
+                            "," => {
+                                params.push(param);
+                                param = String::new();
+                            },
+                            t => param.push_str(t)
+                        }
+                    }
+                    params.push(param);
                 }
 
                 let mut args = Vec::new();
@@ -133,7 +146,7 @@ fn analyse_syntax(tokens: Vec<Vec<String>>) -> Vec<Instruction> {
                     }
                 }
 
-                instructions.push(QOp { id: instr, args });
+                instructions.push(QOp { id: instr, args, params });
             }
         }
     }
@@ -156,21 +169,59 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                     symbol_table[&idc].line_offset + ic,
                 );
             },
-            QOp { id, args } => {
+            QOp { id, args, params } => {
                 match id.as_str() {
                     "h" => { circ.h(symbol_table[&args[0].0].line_offset + args[0].1); },
                     "x" => { circ.x(symbol_table[&args[0].0].line_offset + args[0].1); },
                     "y" => { circ.y(symbol_table[&args[0].0].line_offset + args[0].1); },
                     "z" => { circ.z(symbol_table[&args[0].0].line_offset + args[0].1); },
-                    "cp" => (),
+                    "sx" => { circ.sx(symbol_table[&args[0].0].line_offset + args[0].1); },
+                    "rx" => { 
+                        circ.rx(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
+                    "ry" => { 
+                        circ.ry(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
+                    "rz" => { 
+                        circ.rz(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
+                    "u1" => { 
+                        // TODO: the paper claims these are equivalent, but the definitions at
+                        // https://en.wikipedia.org/wiki/List_of_quantum_logic_gates seem to differ?
+                        circ.rz(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
+                    "u2" => {
+                        circ.u2(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0],
+                            &params[1]
+                        );
+                    },
                     "cx" => {
                         circ.cx(
                             symbol_table[&args[1].0].line_offset + args[1].1,
                             symbol_table[&args[0].0].line_offset + args[0].1
                         );
                     },
-                    "u2" => (),
-                    "u1" => (),
+                    "cp" => {
+                        circ.cp(
+                            symbol_table[&args[1].0].line_offset + args[1].1,
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
                     "ccx" => {
                         circ.ccx(
                             symbol_table[&args[2].0].line_offset + args[2].1,
@@ -178,8 +229,6 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                             symbol_table[&args[0].0].line_offset + args[0].1
                         );
                     },
-                    "rz" => (),
-                    "sx" => { circ.sx(symbol_table[&args[0].0].line_offset + args[0].1); },
                     _ => unimplemented!("unimplemented instruction \"{}\"", id)
                 }
             }

@@ -16,7 +16,7 @@ fn simple_circuit_diff() {
     b.y(1);
     b.z(2);
     b.h(0);
-    b.measure(0, 0);
+    b.measure(2, 0);
 
     let edit_graph = EditGraph::new(a.gates().clone(), b.gates().clone());
     let edit_script = edit_graph.edit_script();
