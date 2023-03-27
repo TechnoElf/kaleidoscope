@@ -100,10 +100,89 @@ impl<T> EditGraph<T>
         path
     }
 
+    fn myers(&self) -> Vec<(usize, usize)> {
+        let n = self.a.len() as isize;
+        let m = self.b.len() as isize;
+        let max = m + n;
+
+        let mut parent = vec![vec![None; n as usize + 1]; m as usize + 1];
+
+        let mut endpoints = Vec::new();
+        endpoints.push((-1, 0));
+
+        'outer: for _d in 0..=max {
+            let mut cur_endpoints = Vec::new();
+            std::mem::swap(&mut endpoints, &mut cur_endpoints);
+
+            for e in cur_endpoints {
+                if e.0 + 1 >= 0 && e.1 >= 0 {
+                    let (mut x, mut y) = (e.0 + 1, e.1);
+                    if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+
+                    while self.is_match_point(x as usize, y as usize) {
+                        (x, y) = (x + 1, y + 1);
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
+                    }
+
+                    if x >= n && y >= m { break 'outer; }
+                    if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                }
+
+                if e.0 >= 0 && e.1 + 1 >= 0 {
+                    let (mut x, mut y) = (e.0, e.1 + 1);
+                    if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+
+                    while self.is_match_point(x as usize, y as usize) {
+                        (x, y) = (x + 1, y + 1);
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
+                    }
+
+                    if x >= n && y >= m { break 'outer; }
+                    if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                }
+            }
+        }
+
+        let mut path = Vec::new();
+        let (mut x, mut y) = (n, m);
+        path.push((n as usize, m as usize));
+        while let Some((par_x, par_y)) = parent[y as usize][x as usize] {
+            path.insert(0, (par_x as usize, par_y as usize));
+            (x, y) = (par_x, par_y);
+            if x < 0 || y < 0 { break; }
+        }
+        path.remove(0);
+
+        path
+    }
+
     pub fn edit_script(&self) -> Vec<Edit<T>> {
         let mut script = Vec::new();
 
         let path = self.dijkstra();
+        let mut path = path.iter();
+
+        let (mut prev_x, mut prev_y) = path.next().unwrap();
+        for (x, y) in path {
+            let (d_x, d_y) = (*x - prev_x, *y - prev_y);
+
+            match (d_x, d_y) {
+                (1, 0) => script.push(Edit::Remove(self.a[prev_x].clone())),
+                (0, 1) => script.push(Edit::Insert(self.b[prev_y].clone())),
+                (1, 1) => script.push(Edit::Keep(self.a[prev_x].clone())),
+                _ => unreachable!()
+            }
+
+            (prev_x, prev_y) = (*x, *y);
+        }
+
+        script
+    }
+
+    pub fn edit_script_myers(&self) -> Vec<Edit<T>> {
+        let mut script = Vec::new();
+
+        let path = self.myers();
         let mut path = path.iter();
 
         let (mut prev_x, mut prev_y) = path.next().unwrap();
@@ -140,6 +219,19 @@ mod tests {
             Edit::Remove('b'), Edit::Keep('a'), Edit::Insert('c')
         ];
         assert_eq!(edit_graph.edit_script(), expected_script);
+    }
+
+    #[test]
+    fn short_text_diff_myers() {
+        let a = "abcabba".chars().collect();
+        let b = "cbabac".chars().collect();
+        let edit_graph = EditGraph::new(a, b);
+        let expected_script = vec![
+            Edit::Insert('c'), Edit::Remove('a'), Edit::Keep('b'),
+            Edit::Remove('c'), Edit::Keep('a'), Edit::Keep('b'),
+            Edit::Remove('b'), Edit::Keep('a'), Edit::Insert('c')
+        ];
+        assert_eq!(edit_graph.edit_script_myers(), expected_script);
     }
 
     #[test]
