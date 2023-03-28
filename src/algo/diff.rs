@@ -111,34 +111,45 @@ impl<T> EditGraph<T>
         endpoints.push((-1, 0));
 
         'outer: for _d in 0..=max {
+            println!("{}: {}", _d, endpoints.len());
             let mut cur_endpoints = Vec::new();
             std::mem::swap(&mut endpoints, &mut cur_endpoints);
 
             for e in cur_endpoints {
-                if e.0 + 1 >= 0 && e.1 >= 0 {
+                if 0 <= e.0 + 1 && e.0 + 1 <= n && 0 <= e.1 && e.1 <= m {
                     let (mut x, mut y) = (e.0 + 1, e.1);
-                    if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+                    let (mut prev_x, mut prev_y) = (e.0, e.1);
 
                     while self.is_match_point(x as usize, y as usize) {
+                        if parent[y as usize][x as usize].is_some() { break; }
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
+                        (prev_x, prev_y) = (x, y);
                         (x, y) = (x + 1, y + 1);
-                        if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
                     }
 
-                    if x >= n && y >= m { break 'outer; }
-                    if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                    if parent[y as usize][x as usize].is_none() {
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
+                        if x >= n && y >= m { break 'outer; }
+                        if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                    }
                 }
 
-                if e.0 >= 0 && e.1 + 1 >= 0 {
+                if 0 <= e.0 && e.0 <= n && 0 <= e.1 + 1 && e.1 + 1 <= m {
                     let (mut x, mut y) = (e.0, e.1 + 1);
-                    if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+                    let (mut prev_x, mut prev_y) = (e.0, e.1);
 
                     while self.is_match_point(x as usize, y as usize) {
+                        if parent[y as usize][x as usize].is_some() { break; }
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
+                        (prev_x, prev_y) = (x, y);
                         (x, y) = (x + 1, y + 1);
-                        if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
                     }
 
-                    if x >= n && y >= m { break 'outer; }
-                    if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                    if parent[y as usize][x as usize].is_none() {
+                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
+                        if x >= n && y >= m { break 'outer; }
+                        if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                    }
                 }
             }
         }

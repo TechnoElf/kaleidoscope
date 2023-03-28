@@ -55,7 +55,7 @@ fn main_screen(ui: &Ui, data: &mut AppState) {
         let src = fs::read_to_string(f).unwrap();
         data.circ_a = openqasm::parse(src);
         let edit = EditGraph::new(data.circ_a.gates().clone(), data.circ_b.gates().clone());
-        data.diff = edit.edit_script();
+        //data.diff = edit.edit_script();
         data.diff_myers = edit.edit_script_myers();
     }
 
@@ -63,7 +63,7 @@ fn main_screen(ui: &Ui, data: &mut AppState) {
         let src = fs::read_to_string(f).unwrap();
         data.circ_b = openqasm::parse(src);
         let edit = EditGraph::new(data.circ_a.gates().clone(), data.circ_b.gates().clone());
-        data.diff = edit.edit_script();
+        //data.diff = edit.edit_script();
         data.diff_myers = edit.edit_script_myers();
     }
 }
