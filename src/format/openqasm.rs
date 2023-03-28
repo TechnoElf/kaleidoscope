@@ -194,6 +194,12 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                             &params[0]
                         );
                     },
+                    "p" => { 
+                        circ.p(
+                            symbol_table[&args[0].0].line_offset + args[0].1,
+                            &params[0]
+                        );
+                    },
                     "u1" => { 
                         circ.p(
                             symbol_table[&args[0].0].line_offset + args[0].1,
@@ -213,6 +219,12 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                             symbol_table[&args[0].0].line_offset + args[0].1
                         );
                     },
+                    "swap" => {
+                        circ.swap(
+                            symbol_table[&args[1].0].line_offset + args[1].1,
+                            symbol_table[&args[0].0].line_offset + args[0].1
+                        );
+                    }
                     "cp" => {
                         circ.cp(
                             symbol_table[&args[1].0].line_offset + args[1].1,
@@ -227,6 +239,13 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                             symbol_table[&args[0].0].line_offset + args[0].1
                         );
                     },
+                    "cswap" => {
+                        circ.cswap(
+                            symbol_table[&args[2].0].line_offset + args[2].1,
+                            symbol_table[&args[1].0].line_offset + args[1].1,
+                            symbol_table[&args[0].0].line_offset + args[0].1
+                        );
+                    }
                     _ => unimplemented!("unimplemented instruction \"{}\"", id)
                 }
             }

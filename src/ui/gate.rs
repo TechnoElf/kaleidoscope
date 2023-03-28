@@ -146,6 +146,26 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
 
             *x += GATE_TOTAL;
         },
+        Gate::SWAP { la, lb } => {
+            {
+                let dl = ui.get_window_draw_list();
+                let (min, max) = min_max([la, lb]);
+                ui.set_cursor_pos([*x + GATE_SIZE / 2.0, y + GATE_TOTAL * min as f32 + GATE_SIZE / 2.0]);
+                let [x, y] = ui.cursor_screen_pos();
+                dl.add_line(
+                    [x, y],
+                    [x, y + GATE_TOTAL * (max - min) as f32],
+                    colour
+                ).thickness(4.0).build();
+            }
+
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * la as f32]);
+            one_qubit_swap_gate(ui, colour);
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * lb as f32]);
+            one_qubit_swap_gate(ui, colour);
+
+            *x += GATE_TOTAL;
+        },
         Gate::CP { l, c, theta } => {
             {
                 let dl = ui.get_window_draw_list();
@@ -197,13 +217,47 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
             one_qubit_control_gate(ui, colour);
             
             *x += GATE_TOTAL;
+        },
+        Gate::CSWAP { la, lb, c } => {
+            {
+                let dl = ui.get_window_draw_list();
+                let (min, max) = min_max([la, lb, c]);
+                ui.set_cursor_pos([*x + GATE_SIZE / 2.0, y + GATE_TOTAL * min as f32 + GATE_SIZE / 2.0]);
+                let [x, y] = ui.cursor_screen_pos();
+                dl.add_line(
+                    [x, y],
+                    [x, y + GATE_TOTAL * (max - min) as f32],
+                    colour
+                ).thickness(4.0).build();
+            }
+
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * la as f32]);
+            one_qubit_swap_gate(ui, colour);
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * lb as f32]);
+            one_qubit_swap_gate(ui, colour);
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * c as f32]);
+            one_qubit_control_gate(ui, colour);
+
+            *x += GATE_TOTAL;
         }
     }
 }
 
+fn one_qubit_swap_gate(ui: &Ui, colour: [f32; 3]) {
+    one_qubit_gate(ui, |dl, o, d| {
+        dl.add_line([o.0 + d.0 * (1.0/4.0), o.1 + d.1 * (1.0/4.0)], [o.0 + d.0 * (3.0/4.0), o.1 + d.1 * (3.0/4.0)], colour)
+            .thickness(4.0)
+            .build();
+
+        dl.add_line([o.0 + d.0 * (3.0/4.0), o.1 + d.1 * (1.0/4.0)], [o.0 + d.0 * (1.0/4.0), o.1 + d.1 * (3.0/4.0)], colour)
+            .thickness(4.0)
+            .build();
+    });
+}
+
 fn one_qubit_control_gate(ui: &Ui, colour: [f32; 3]) {
     one_qubit_gate(ui, |dl, o, d| {
-        dl.add_circle([o.0 + d.0  / 2.0, o.1 + d.1 / 2.0], 10.0, colour)
+        dl.add_circle([o.0 + d.0 / 2.0, o.1 + d.1 / 2.0], 10.0, colour)
             .filled(true)
             .build();
     });

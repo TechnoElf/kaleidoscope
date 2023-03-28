@@ -35,8 +35,10 @@ impl Circuit {
             P { l, theta } => self.p(l, &theta),
             U2 { l, phi, lambda } => self.u2(l, &phi, &lambda),
             CX { l, c } => self.cx(l, c),
+            SWAP { la, lb } => self.swap(la, lb),
             CP { l, c, theta } => self.cp(l, c, &theta),
-            CCX { l, c0, c1 } => self.ccx(l, c0, c1)
+            CCX { l, c0, c1 } => self.ccx(l, c0, c1),
+            CSWAP { la, lb, c } => self.cswap(la, lb, c)
         }
     }
 
@@ -109,6 +111,12 @@ impl Circuit {
         self.gates.push(CX { l, c })
     }
 
+    pub fn swap(&mut self, la: usize, lb: usize) {
+        if self.q_lines <= la { self.q_lines = la + 1; }
+        if self.q_lines <= lb { self.q_lines = lb + 1; }
+        self.gates.push(SWAP { la, lb })
+    }
+
     pub fn cp(&mut self, l: usize, c: usize, theta: &str) {
         if self.q_lines <= l { self.q_lines = l + 1; }
         if self.q_lines <= c { self.q_lines = c + 1; }
@@ -120,6 +128,13 @@ impl Circuit {
         if self.q_lines <= c0 { self.q_lines = c0 + 1; }
         if self.q_lines <= c1 { self.q_lines = c1 + 1; }
         self.gates.push(CCX { l, c0, c1 })
+    }
+
+    pub fn cswap(&mut self, la: usize, lb: usize, c: usize) {
+        if self.q_lines <= la { self.q_lines = la + 1; }
+        if self.q_lines <= lb { self.q_lines = lb + 1; }
+        if self.q_lines <= c { self.q_lines = c + 1; }
+        self.gates.push(CSWAP { la, lb, c })
     }
 }
 
@@ -137,8 +152,10 @@ pub enum Gate {
     P { l: usize, theta: String }, // Phase
     U2 { l: usize, phi: String, lambda: String }, // Rotate y and z
     CX { l: usize, c: usize }, // Controlled x
+    SWAP { la: usize, lb: usize }, // Swap
     CP { l: usize, c: usize, theta: String }, // Controlled phase
-    CCX { l: usize, c0: usize, c1: usize } // Toffoli
+    CCX { l: usize, c0: usize, c1: usize }, // Toffoli
+    CSWAP { la: usize, lb: usize, c: usize } // Controlled swap
 }
 
 impl PartialEq for Gate {
@@ -156,8 +173,10 @@ impl PartialEq for Gate {
             (P { l: la, theta: theta_a }, P { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
             (U2 { l: la, phi: phi_a, lambda: lambda_a }, U2 { l: lb, phi: phi_b, lambda: lambda_b }) => la == lb && phi_a == phi_b && lambda_a == lambda_b,
             (CX { l: la, c: ca }, CX { l: lb, c: cb }) => la == lb && ca == cb,
+            (SWAP { la: laa, lb: lba }, SWAP { la: lab, lb: lbb }) => laa == lab && lba == lbb,
             (CP { l: la, c: ca, theta: theta_a }, CP { l: lb, c: cb, theta: theta_b }) => la == lb && ca == cb && theta_a == theta_b,
             (CCX { l: la, c0: c0a, c1: c1a }, CCX { l: lb, c0: c0b, c1: c1b }) => la == lb && c0a == c0b && c1a == c1b,
+            (CSWAP { la: laa, lb: lba, c: ca }, CSWAP { la: lab, lb: lbb, c: cb }) => laa == lab && lba == lbb && ca == cb,
             _ => false
         }
     }
