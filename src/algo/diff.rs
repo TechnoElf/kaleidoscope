@@ -117,11 +117,11 @@ impl<T> EditGraph<T>
             for e in cur_endpoints {
                 if e.0 + 1 >= 0 && e.1 >= 0 {
                     let (mut x, mut y) = (e.0 + 1, e.1);
-                    if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+                    if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((e.0, e.1)); }
 
                     while self.is_match_point(x as usize, y as usize) {
                         (x, y) = (x + 1, y + 1);
-                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
+                        if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
                     }
 
                     if x >= n && y >= m { break 'outer; }
@@ -130,11 +130,11 @@ impl<T> EditGraph<T>
 
                 if e.0 >= 0 && e.1 + 1 >= 0 {
                     let (mut x, mut y) = (e.0, e.1 + 1);
-                    if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((e.0, e.1)); }
+                    if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((e.0, e.1)); }
 
                     while self.is_match_point(x as usize, y as usize) {
                         (x, y) = (x + 1, y + 1);
-                        if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
+                        if 0 <= x && x <= n && 0 <= y && y <= m && parent[y as usize][x as usize].is_none() { parent[y as usize][x as usize] = Some((x - 1, y - 1)); }
                     }
 
                     if x >= n && y >= m { break 'outer; }
@@ -147,11 +147,10 @@ impl<T> EditGraph<T>
         let (mut x, mut y) = (n, m);
         path.push((n as usize, m as usize));
         while let Some((par_x, par_y)) = parent[y as usize][x as usize] {
-            path.insert(0, (par_x as usize, par_y as usize));
             (x, y) = (par_x, par_y);
             if x < 0 || y < 0 { break; }
+            path.insert(0, (x as usize, y as usize));
         }
-        path.remove(0);
 
         path
     }
