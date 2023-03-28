@@ -96,6 +96,21 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
             one_qubit_text_gate(ui, "RZ", colour);
             *x += GATE_TOTAL;
         },
+        Gate::P { l, theta } => {
+            ui.set_cursor_pos([*x, y + GATE_TOTAL * l as f32]);
+
+            {
+                let [x, y] = ui.cursor_screen_pos();
+                if ui.is_mouse_hovering_rect([x, y], [x + GATE_SIZE, y + GATE_SIZE]) {
+                    ui.tooltip(|| {
+                        ui.text(format!("({})", theta));
+                    });
+                }
+            }
+
+            one_qubit_text_gate(ui, "P", colour);
+            *x += GATE_TOTAL;
+        },
         Gate::U2 { l, phi, lambda } => {
             ui.set_cursor_pos([*x, y + GATE_TOTAL * l as f32]);
 

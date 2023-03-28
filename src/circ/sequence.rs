@@ -32,6 +32,7 @@ impl Circuit {
             RX { l, theta } => self.rx(l, &theta),
             RY { l, theta } => self.ry(l, &theta),
             RZ { l, theta } => self.rz(l, &theta),
+            P { l, theta } => self.p(l, &theta),
             U2 { l, phi, lambda } => self.u2(l, &phi, &lambda),
             CX { l, c } => self.cx(l, c),
             CP { l, c, theta } => self.cp(l, c, &theta),
@@ -92,6 +93,11 @@ impl Circuit {
         self.gates.push(RZ { l, theta: theta.to_string() })
     }
 
+    pub fn p(&mut self, l: usize, theta: &str) {
+        if self.q_lines <= l { self.q_lines = l + 1; }
+        self.gates.push(P { l, theta: theta.to_string() })
+    }
+
     pub fn u2(&mut self, l: usize, phi: &str, lambda: &str) {
         if self.q_lines <= l { self.q_lines = l + 1; }
         self.gates.push(U2 { l, phi: phi.to_string(), lambda: lambda.to_string() })
@@ -128,6 +134,7 @@ pub enum Gate {
     RX { l: usize, theta: String }, // Rotate x
     RY { l: usize, theta: String }, // Rotate y
     RZ { l: usize, theta: String }, // Rotate z
+    P { l: usize, theta: String }, // Phase
     U2 { l: usize, phi: String, lambda: String }, // Rotate y and z
     CX { l: usize, c: usize }, // Controlled x
     CP { l: usize, c: usize, theta: String }, // Controlled phase
@@ -146,6 +153,7 @@ impl PartialEq for Gate {
             (RX { l: la, theta: theta_a }, RX { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
             (RY { l: la, theta: theta_a }, RY { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
             (RZ { l: la, theta: theta_a }, RZ { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
+            (P { l: la, theta: theta_a }, P { l: lb, theta: theta_b }) => la == lb && theta_a == theta_b,
             (U2 { l: la, phi: phi_a, lambda: lambda_a }, U2 { l: lb, phi: phi_b, lambda: lambda_b }) => la == lb && phi_a == phi_b && lambda_a == lambda_b,
             (CX { l: la, c: ca }, CX { l: lb, c: cb }) => la == lb && ca == cb,
             (CP { l: la, c: ca, theta: theta_a }, CP { l: lb, c: cb, theta: theta_b }) => la == lb && ca == cb && theta_a == theta_b,

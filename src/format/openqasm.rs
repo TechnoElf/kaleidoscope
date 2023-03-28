@@ -195,9 +195,7 @@ fn analyse_semantics(syntax: Vec<Instruction>) -> Circuit {
                         );
                     },
                     "u1" => { 
-                        // TODO: the paper claims these are equivalent, but the definitions at
-                        // https://en.wikipedia.org/wiki/List_of_quantum_logic_gates seem to differ?
-                        circ.rz(
+                        circ.p(
                             symbol_table[&args[0].0].line_offset + args[0].1,
                             &params[0]
                         );
