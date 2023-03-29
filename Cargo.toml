@@ -9,3 +9,5 @@ imgui-glium-renderer = { git = "https://github.com/imgui-rs/imgui-rs" }
 imgui-winit-support = { git = "https://github.com/imgui-rs/imgui-rs" }
 winit = { version = "0.27.2", features = ["x11"] }
 glium = "0.32"
+
+rand = "0.8.5"

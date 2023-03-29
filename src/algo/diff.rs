@@ -1,5 +1,7 @@
 use std::fmt::Debug;
 
+extern crate test;
+
 // http://www.xmailserver.org/diff2.pdf
 
 #[derive(Debug, PartialEq, Eq)]
@@ -111,7 +113,6 @@ impl<T> EditGraph<T>
         endpoints.push((-1, 0));
 
         'outer: for _d in 0..=max {
-            println!("{}: {}", _d, endpoints.len());
             let mut cur_endpoints = Vec::new();
             std::mem::swap(&mut endpoints, &mut cur_endpoints);
 
@@ -217,6 +218,9 @@ impl<T> EditGraph<T>
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
+    use rand::Rng;
+    use rand::distributions::{Distribution, Uniform};
 
     #[test]
     fn short_text_diff() {
@@ -249,5 +253,42 @@ mod tests {
         let a = "jurghuerhgukrshgeuriguiegerguiwrgui".chars().collect();
         let b = "ruieguirghuieugiteuguitouwrehjrguiwrhguiorewh".chars().collect();
         let _ = EditGraph::new(a, b);
+    }
+
+    #[bench]
+    fn bench_text_diff_10(b: &mut Bencher) {
+        bench_text_diff_n(10, b);
+    }
+
+    #[bench]
+    fn bench_text_diff_100(b: &mut Bencher) {
+        bench_text_diff_n(100, b);
+    }
+
+    #[bench]
+    fn bench_text_diff_1000(b: &mut Bencher) {
+        bench_text_diff_n(1000, b);
+    }
+
+    fn bench_text_diff_n(n: usize, b: &mut Bencher) {
+        let mut rng = rand::thread_rng();
+
+        let mut e = Vec::new();
+        for _ in 0..100 {
+            let mut a: Vec<char> = Vec::new();
+            let mut b: Vec<char> = Vec::new();
+            for _ in 0..n {
+                a.push(rng.gen());
+                b.push(rng.gen());
+            }
+
+            e.push(EditGraph::new(a, b));
+        }
+
+        let i = Uniform::from(0..e.len());
+
+        b.iter(|| {
+            let _ = e[i.sample(&mut rng)].edit_script_myers();
+        });
     }
 }

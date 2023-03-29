@@ -1,3 +1,6 @@
+#![feature(test)]
+extern crate test;
+
 mod algo;
 mod circ;
 mod format;
@@ -25,9 +28,9 @@ struct AppState {
 }
 
 fn main_screen(ui: &Ui, data: &mut AppState) {
-    circuit_window(ui, "Circuit A", &data.circ_a);
-    diff_window(ui, "A -> B (Dijkstra)", &data.diff, &data.circ_a, &data.circ_b);
-    diff_window(ui, "A -> B (Myers)", &data.diff_myers, &data.circ_a, &data.circ_b);
+    //circuit_window(ui, "Circuit A", &data.circ_a);
+    //diff_window(ui, "A -> B (Dijkstra)", &data.diff, &data.circ_a, &data.circ_b);
+    diff_window(ui, "A -> B", &data.diff_myers, &data.circ_a, &data.circ_b);
 
     let mut file_picker_request_a = false;
     let mut file_picker_request_b = false;
