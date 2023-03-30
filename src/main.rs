@@ -20,7 +20,6 @@ use imgui::*;
 
 struct AppState {
     diff: Vec<Edit<Gate>>,
-    diff_myers: Vec<Edit<Gate>>,
     circ_a: Circuit,
     circ_b: Circuit,
     file_picker_a: FilePicker,
@@ -28,9 +27,9 @@ struct AppState {
 }
 
 fn main_screen(ui: &Ui, data: &mut AppState) {
-    //circuit_window(ui, "Circuit A", &data.circ_a);
-    //diff_window(ui, "A -> B (Dijkstra)", &data.diff, &data.circ_a, &data.circ_b);
-    diff_window(ui, "A -> B", &data.diff_myers, &data.circ_a, &data.circ_b);
+    circuit_window(ui, "Circuit A", &data.circ_a);
+    circuit_window(ui, "Circuit B", &data.circ_b);
+    diff_window(ui, "A -> B", &data.diff, &data.circ_a, &data.circ_b);
 
     let mut file_picker_request_a = false;
     let mut file_picker_request_b = false;
@@ -58,16 +57,14 @@ fn main_screen(ui: &Ui, data: &mut AppState) {
         let src = fs::read_to_string(f).unwrap();
         data.circ_a = openqasm::parse(src);
         let edit = EditGraph::new(data.circ_a.gates().clone(), data.circ_b.gates().clone());
-        //data.diff = edit.edit_script();
-        data.diff_myers = edit.edit_script_myers();
+        data.diff = edit.edit_script();
     }
 
     if let Some(f) = data.file_picker_b.update(ui) {
         let src = fs::read_to_string(f).unwrap();
         data.circ_b = openqasm::parse(src);
         let edit = EditGraph::new(data.circ_a.gates().clone(), data.circ_b.gates().clone());
-        //data.diff = edit.edit_script();
-        data.diff_myers = edit.edit_script_myers();
+        data.diff = edit.edit_script();
     }
 }
 
@@ -78,7 +75,6 @@ fn main() {
 
     let app_state = AppState {
         diff: edit.edit_script(),
-        diff_myers: edit.edit_script_myers(),
         circ_a,
         circ_b,
         file_picker_a: FilePicker::new("fpa".to_string()),

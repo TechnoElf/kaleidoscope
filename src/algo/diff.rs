@@ -35,6 +35,7 @@ impl<T> EditGraph<T>
         self.a[x] == self.b[y]
     }
 
+    #[allow(dead_code)]
     fn dijkstra(&self) -> Vec<(usize, usize)> {
         let mut dist = vec![vec![None; self.a.len() + 1]; self.b.len() + 1];
         let mut parent = vec![vec![None; self.a.len() + 1]; self.b.len() + 1];
@@ -117,6 +118,7 @@ impl<T> EditGraph<T>
             std::mem::swap(&mut endpoints, &mut cur_endpoints);
 
             for e in cur_endpoints {
+                // right
                 if 0 <= e.0 + 1 && e.0 + 1 <= n && 0 <= e.1 && e.1 <= m {
                     let (mut x, mut y) = (e.0 + 1, e.1);
                     let (mut prev_x, mut prev_y) = (e.0, e.1);
@@ -131,10 +133,11 @@ impl<T> EditGraph<T>
                     if parent[y as usize][x as usize].is_none() {
                         if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
                         if x >= n && y >= m { break 'outer; }
-                        if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                        endpoints.push((x, y));
                     }
                 }
 
+                // down
                 if 0 <= e.0 && e.0 <= n && 0 <= e.1 + 1 && e.1 + 1 <= m {
                     let (mut x, mut y) = (e.0, e.1 + 1);
                     let (mut prev_x, mut prev_y) = (e.0, e.1);
@@ -149,7 +152,7 @@ impl<T> EditGraph<T>
                     if parent[y as usize][x as usize].is_none() {
                         if 0 <= x && x <= n && 0 <= y && y <= m { parent[y as usize][x as usize] = Some((prev_x, prev_y)); }
                         if x >= n && y >= m { break 'outer; }
-                        if !endpoints.contains(&(x, y)) { endpoints.push((x, y)); }
+                        endpoints.push((x, y));
                     }
                 }
             }
@@ -168,29 +171,6 @@ impl<T> EditGraph<T>
     }
 
     pub fn edit_script(&self) -> Vec<Edit<T>> {
-        let mut script = Vec::new();
-
-        let path = self.dijkstra();
-        let mut path = path.iter();
-
-        let (mut prev_x, mut prev_y) = path.next().unwrap();
-        for (x, y) in path {
-            let (d_x, d_y) = (*x - prev_x, *y - prev_y);
-
-            match (d_x, d_y) {
-                (1, 0) => script.push(Edit::Remove(self.a[prev_x].clone())),
-                (0, 1) => script.push(Edit::Insert(self.b[prev_y].clone())),
-                (1, 1) => script.push(Edit::Keep(self.a[prev_x].clone())),
-                _ => unreachable!()
-            }
-
-            (prev_x, prev_y) = (*x, *y);
-        }
-
-        script
-    }
-
-    pub fn edit_script_myers(&self) -> Vec<Edit<T>> {
         let mut script = Vec::new();
 
         let path = self.myers();
@@ -227,32 +207,26 @@ mod tests {
         let a = "abcabba".chars().collect();
         let b = "cbabac".chars().collect();
         let edit_graph = EditGraph::new(a, b);
-        let expected_script = vec![
-            Edit::Insert('c'), Edit::Remove('a'), Edit::Keep('b'),
-            Edit::Remove('c'), Edit::Keep('a'), Edit::Keep('b'),
-            Edit::Remove('b'), Edit::Keep('a'), Edit::Insert('c')
-        ];
-        assert_eq!(edit_graph.edit_script(), expected_script);
-    }
+        let edit_script = edit_graph.edit_script();
 
-    #[test]
-    fn short_text_diff_myers() {
-        let a = "abcabba".chars().collect();
-        let b = "cbabac".chars().collect();
-        let edit_graph = EditGraph::new(a, b);
         let expected_script = vec![
-            Edit::Insert('c'), Edit::Remove('a'), Edit::Keep('b'),
-            Edit::Remove('c'), Edit::Keep('a'), Edit::Keep('b'),
-            Edit::Remove('b'), Edit::Keep('a'), Edit::Insert('c')
+            Edit::Remove('a'), Edit::Remove('b'), Edit::Keep('c'),
+            Edit::Remove('a'), Edit::Keep('b'), Edit::Insert('a'),
+            Edit::Keep('b'), Edit::Keep('a'), Edit::Insert('c')
         ];
-        assert_eq!(edit_graph.edit_script_myers(), expected_script);
+
+        assert_eq!(edit_script.len(), expected_script.len());
+        assert_eq!(edit_script, expected_script);
     }
 
     #[test]
     fn long_text_diff() {
         let a = "jurghuerhgukrshgeuriguiegerguiwrgui".chars().collect();
         let b = "ruieguirghuieugiteuguitouwrehjrguiwrhguiorewh".chars().collect();
-        let _ = EditGraph::new(a, b);
+        let edit_graph = EditGraph::new(a, b);
+        let edit_script = edit_graph.edit_script();
+
+        assert_eq!(edit_script.len(), 57);
     }
 
     #[bench]
@@ -288,7 +262,7 @@ mod tests {
         let i = Uniform::from(0..e.len());
 
         b.iter(|| {
-            let _ = e[i.sample(&mut rng)].edit_script_myers();
+            let _ = e[i.sample(&mut rng)].edit_script();
         });
     }
 }
