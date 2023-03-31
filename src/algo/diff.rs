@@ -3,6 +3,8 @@ use std::fmt::Debug;
 extern crate test;
 
 // http://www.xmailserver.org/diff2.pdf
+// https://dl.acm.org/doi/pdf/10.1145/2642937.2642982
+// https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=878178
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Edit<T>
@@ -242,6 +244,11 @@ mod tests {
     #[bench]
     fn bench_text_diff_1000(b: &mut Bencher) {
         bench_text_diff_n(1000, b);
+    }
+
+    #[bench]
+    fn bench_text_diff_10000(b: &mut Bencher) {
+        bench_text_diff_n(10000, b);
     }
 
     fn bench_text_diff_n(n: usize, b: &mut Bencher) {

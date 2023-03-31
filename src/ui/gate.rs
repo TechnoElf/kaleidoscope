@@ -140,7 +140,7 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
             }
 
             ui.set_cursor_pos([*x, y + GATE_TOTAL * l as f32]);
-            one_qubit_text_gate(ui, "X", colour);
+            one_qubit_x_gate(ui, colour);
             ui.set_cursor_pos([*x, y + GATE_TOTAL * c as f32]);
             one_qubit_control_gate(ui, colour);
 
@@ -210,7 +210,7 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
             }
 
             ui.set_cursor_pos([*x, y + GATE_TOTAL * l as f32]);
-            one_qubit_text_gate(ui, "X", colour);
+            one_qubit_x_gate(ui, colour);
             ui.set_cursor_pos([*x, y + GATE_TOTAL * c0 as f32]);
             one_qubit_control_gate(ui, colour);
             ui.set_cursor_pos([*x, y + GATE_TOTAL * c1 as f32]);
@@ -243,12 +243,29 @@ pub fn gate_on_grid(gate: Gate, x: &mut f32, y: f32, ql: usize, colour: [f32; 3]
     }
 }
 
+fn one_qubit_x_gate(ui: &Ui, colour: [f32; 3]) {
+    one_qubit_gate(ui, |dl, o, d| {
+        dl.add_circle([o.0 + d.0 / 2.0, o.1 + d.1 / 2.0], d.0 / 4.0, [0.0, 0.0, 0.0])
+            .filled(true)
+            .build();
+        dl.add_circle([o.0 + d.0 / 2.0, o.1 + d.1 /2.0], d.0 / 4.0, colour)
+            .thickness(2.0)
+            .build();
+
+        dl.add_line([o.0 + d.0 / 2.0, o.1 + d.1 * (1.0/4.0)], [o.0 + d.0 / 2.0, o.1 + d.1 * (3.0/4.0)], colour)
+            .thickness(3.0)
+            .build();
+        dl.add_line([o.0 + d.0 * (1.0/4.0), o.1 + d.1 / 2.0], [o.0 + d.0 * (3.0/4.0), o.1 + d.1 / 2.0], colour)
+            .thickness(3.0)
+            .build();
+    });
+}
+
 fn one_qubit_swap_gate(ui: &Ui, colour: [f32; 3]) {
     one_qubit_gate(ui, |dl, o, d| {
         dl.add_line([o.0 + d.0 * (1.0/4.0), o.1 + d.1 * (1.0/4.0)], [o.0 + d.0 * (3.0/4.0), o.1 + d.1 * (3.0/4.0)], colour)
             .thickness(4.0)
             .build();
-
         dl.add_line([o.0 + d.0 * (3.0/4.0), o.1 + d.1 * (1.0/4.0)], [o.0 + d.0 * (1.0/4.0), o.1 + d.1 * (3.0/4.0)], colour)
             .thickness(4.0)
             .build();
