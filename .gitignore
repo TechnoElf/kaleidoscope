@@ -3,6 +3,4 @@
 /.direnv
 *.swp
 *.swo
-/test_files
 /imgui.ini
-/bench.md

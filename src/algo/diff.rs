@@ -5,6 +5,8 @@ extern crate test;
 // http://www.xmailserver.org/diff2.pdf
 // https://dl.acm.org/doi/pdf/10.1145/2642937.2642982
 // https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=878178
+// https://www.cda.cit.tum.de/files/eda/2020_qce_verification_of_ibm_qiskit_quantum_circuit_compilation_flow.pdf
+// TODO: Edit graph on a grid instead of a sequence as a more accurate representation of a quantum circuit
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Edit<T>
